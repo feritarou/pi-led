@@ -90,6 +90,12 @@ module Pi
       OptionParser.parse do |p|
         p.banner = "Usage: pi-led [args]"
 
+        p.on "-h", "--help",
+             "Shows this help" do
+          puts p
+          exit 0
+        end
+
         p.on "-c PATH",
              "--config-file=PATH",
              "Specifies a path to the config file (default: ~/.pi-led.ini)" do |path|
@@ -102,7 +108,7 @@ module Pi
         end
 
         p.invalid_option do |flag|
-          STDERR.puts "Invalid option #{flag}. Aborting."
+          STDERR.puts "Invalid option #{flag}."
           STDERR.puts p
           exit 1
         end

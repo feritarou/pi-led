@@ -1,0 +1,23 @@
+{
+  "logger": {
+    "title": "Remote Sync"
+  },
+  "uploadOnSave": false,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "raspberrypi.local",
+  "ignore": [
+    ".remote-sync.json",
+    ".atom-build.yml",
+    ".editorconfig",
+    ".gitignore",
+    ".travis.yml",
+    ".git/**",
+    "magicstone.wiki/**"
+  ],
+  "username": "pi",
+  "watch": [],
+  "transport": "scp",
+  "target": "/home/pi/iot-magicstone",
+  "useAgent": true
+}

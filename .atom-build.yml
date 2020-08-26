@@ -1,0 +1,10 @@
+targets:
+  Run shards install:
+    name: shards_install
+    sh: false
+    cmd: shards
+  Cross compile for RPi:
+    name: crystal cross-compile
+    sh: false
+    cmd: make
+    args: [cross_pi]

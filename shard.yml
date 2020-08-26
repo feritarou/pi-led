@@ -1,0 +1,19 @@
+name: pi-led
+version: 0.1.0
+description: |
+  A simple helper program to control LEDs attached to one or multiple GPIO pins of a Raspberry Pi.
+
+authors:
+  - Mastory Berlin <info@mastory.de>
+
+targets:
+  pi-led:
+    main: src/pi-led.cr
+
+dependencies:
+  pi-gpio:
+    path: /home/felix/Mastory/pi-gpio
+
+crystal: 0.35.1
+
+license: MIT

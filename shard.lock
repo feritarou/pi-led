@@ -1,0 +1,6 @@
+version: 2.0
+shards:
+  pi-gpio:
+    path: /home/felix/Mastory/pi-gpio
+    version: 0.1.0
+

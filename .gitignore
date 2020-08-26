@@ -1,3 +1,5 @@
+/.atom-build.yml
+/.editorconfig
 /docs/
 /lib/
 /bin/

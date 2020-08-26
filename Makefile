@@ -5,14 +5,13 @@ TARGET_PLATFORM=arm-unknown-linux-gnueabihf
 HOSTNAME=raspberrypi.local
 USERNAME=pi
 LOGIN=$(USERNAME)@$(HOSTNAME)
-GITHUB_USERNAME=mastoryberlin
-LOCAL_PATH_BASE=/home/felix/Mastory
-CMD_LINE_REPLACEMENTS=s!-o $(CROSS_TARGET)!-o bin/$(REPO)!;s!\S+/tinkerforge/[a-z0-9_./]+obj!obj!g;s!\S+/libcrystal.a!/opt/crystal/src/ext/libcrystal.a!
+CMD_LINE_REPLACEMENTS=s!-o $(CROSS_TARGET)!-o bin/$(REPO)!;s!\S+/libcrystal.a!/opt/crystal/src/ext/libcrystal.a!
 CROSS_TARGET=bin/$(REPO)-cross
 TARGET_CMD=/tmp/target_cmd
 
-cross_pi: $(CROSS_TARGET) $(TARGET_CMD)
+cross-pi: $(CROSS_TARGET) $(TARGET_CMD)
 	echo "\
+		!mkdir -p ${REPO} \n \
 		cd ${REPO} \n \
 		put ${TARGET_CMD} \n\
 		put ${CROSS_TARGET}.o ./${CROSS_TARGET}.o" \

@@ -5,8 +5,48 @@ require "log"
 
 module Pi
 
-  # A simple helper program to control LEDs attached to one or multiple GPIO pins
-  # of a Raspberry Pi.
+  # `pi-led` is a simple helper program for Raspberry Pi to control LEDs attached to one or multiple GPIO pins.
+  #
+  # Both single- or multichannel (RGB) LEDs are supported; the attached pins can be configured through a simple configuration file.
+  # Through the same mechanism, `pi-led` also provides an easy way to let an LED flash or blink with some particular pattern.
+  #
+  # ## Configuration
+  # To inform `pi-led` about your LEDs and the GPIO pins they are connected to, you must provide it with a simple configuration file.
+  # By default, `pi-led` attempts to read the file `~/.pi-led.ini`. This path can be overridden with the `-c` command line option.
+  #
+  # The config file is an INI-style list of sections, where
+  # 1. each section title must be a unique name that distinguishes some particular LED (*LED identifier*);
+  # 2. in each key-value pair, the key must consist of a **single letter** that serves as a *channel identifier*; and
+  # 3. the value denotes the GPIO pin number this channel is connected at, in the range 0..27.
+  # Example of a configuration file for a 2 LEDs setup:
+  # ```
+  # [MyFirstLED]
+  # W=15
+  # [Colored]
+  # R=2
+  # G=3
+  # B=4
+  # ```
+  #
+  # ## Patterns
+  # Channel and LED identifiers can then be used together with pausing information to create arbitrary *blinking patterns*
+  # that your LEDs will repeat until another pattern is put into effect. Patterns are composed from tokens separated by whitespace,
+  # where each token must be one of the following:
+  # - An LED identifier that matches exactly the name of the corresponding section in the config file and is followed by a colon
+  #   as in `MyFirstLED:`. This will affect all subsequent tokens until another LED identifier is encountered. As long as no
+  #   LED identifier is present, `pi-led` will interpret all channels as referring to the first LED section in the config file.
+  # - A combination of uppercase and lowercase versions of channel identifiers: An uppercase letter leads to the channel being
+  #   turned on (i.e., the corresponding GPIO pin will be set to "high" voltage), while lowercase letters turn it off again.
+  # - A pause command, consisting of an integer and an optional unit string that together denote a time span to wait before
+  #   the next token is executed. Valid unit strings are `h`, `min`, `s`, `ms`, `µs`, and `ns`. If no unit string is specified,
+  #   "ms" (milliseconds) is assumed as default.
+  # - A single hyphen character (`-`), which serves as a shortcut to switch off all channels of the currently selected LED.
+  #   (Thus, if the LED has three channels `a`, `b`, and `c`, `-` would be equivalent to `abc`.)
+  #
+  # ## Usage
+  # Once `pi-led` runs, patterns can be started by simply providing them on STDIN as a line of input. The pattern will be stay
+  # in effect until it is replaced by another one.
+  # Thus patterns can also be easily switched by scripts or other programs that rely on `pi-led` as a child process, via piping.
   module LED
     extend self
 
@@ -178,12 +218,25 @@ module Pi
           tokens = pattern.split
           tokens.each do |token|
             case token
-            when /[0-9]+/
-              duration = token.to_i
-              @@ops[k] = Pause.new duration.microseconds
+            when /^([[:alpha:]][^:]*):$/
+              current = @@led[$1] || current
+
+            when /^(\d+)(h|min|s|ms|µs|ns)?$/
+              amount = $1.to_i
+              duration = case $2?
+                when "h"    then amount.hours
+                when "min"  then amount.minutes
+                when "s"    then amount.seconds
+                when "ms"   then amount.milliseconds
+                when "µs"   then amount.microseconds
+                when "ns"   then amount.nanoseconds
+                else             amount.milliseconds
+                end
+              @@ops[k] = Pause.new duration
               @@static = false
               k += 1
-            when /[a-zA-Z]+/
+
+            when /^[a-zA-Z]+$/
               token.chars.each do |c|
                 d = c.downcase
                 Log.trace &.emit "Checking for entry", channel: d.to_s
@@ -198,6 +251,12 @@ module Pi
                   end
                   k += 1
                 end
+              end
+
+            when "-"
+              current.values.each do |pin|
+                @@ops[k] = Off.new pin
+                k += 1
               end
             end
           end

@@ -7,4 +7,4 @@ targets:
     name: crystal cross-compile
     sh: false
     cmd: make
-    args: [cross_pi]
+    args: [cross-pi]
